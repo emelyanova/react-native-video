@@ -20,6 +20,8 @@ static NSString *const timedMetadata = @"timedMetadata";
   AVPlayerLayer *_playerLayer;
   AVPlayerViewController *_playerViewController;
   NSURL *_videoURL;
+    
+    BOOL _isReadyForDisplaySet;
 
   /* Required to publish events */
   RCTEventDispatcher *_eventDispatcher;
@@ -254,6 +256,7 @@ static NSString *const timedMetadata = @"timedMetadata";
 {
   if (_playerLayer) {
     [_playerLayer removeObserver:self forKeyPath:readyForDisplayKeyPath];
+    _isReadyForDisplaySet = NO;
   }
   if (_playerItemObserversSet) {
     [_playerItem removeObserver:self forKeyPath:statusKeyPath];
@@ -699,6 +702,7 @@ static NSString *const timedMetadata = @"timedMetadata";
       // resize mode must be set before layer is added
       [self setResizeMode:_resizeMode];
       [_playerLayer addObserver:self forKeyPath:readyForDisplayKeyPath options:NSKeyValueObservingOptionNew context:nil];
+        _isReadyForDisplaySet = YES;
 
       [self.layer addSublayer:_playerLayer];
       self.layer.needsDisplayOnBoundsChange = YES;
@@ -731,8 +735,11 @@ static NSString *const timedMetadata = @"timedMetadata";
 
 - (void)removePlayerLayer
 {
+    if (_isReadyForDisplaySet) {
+        [_playerLayer removeObserver:self forKeyPath:readyForDisplayKeyPath];
+    }
+ 
     [_playerLayer removeFromSuperlayer];
-    [_playerLayer removeObserver:self forKeyPath:readyForDisplayKeyPath];
     _playerLayer = nil;
 }
 
